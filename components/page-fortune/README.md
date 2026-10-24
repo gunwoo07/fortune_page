@@ -4,8 +4,7 @@
 
 ## 검토 시작점과 현재 Git 상태
 
-- 브랜치: `feat/fancyui`. UI 변경은 작업 트리에 있으며 아직 스테이징·커밋·푸시하지 않았습니다.
-- `origin/main`은 브랜치 복사 때 함께 복사된 upstream 설정입니다. `main`을 수정한 것이 아닙니다.
+- 작업 브랜치는 `feat/fancyui`이며 원격 `origin/feat/fancyui`에 푸시합니다. 현재 상태와 커밋은 `git status`와 `git log`로 확인하세요. `main`에는 직접 반영하지 않았습니다.
 - 검토 요청 시 실행 중이던 프로덕션 서버를 종료했고, 로컬 3000번 포트가 닫힌 것을 확인했습니다.
 - 먼저 이 문서의 파일 지도와 데이터 흐름을 읽고 `app/page.tsx` → `preview-input.tsx` → `input-screen.tsx` → `result-screen.tsx` 순서로 보면 됩니다.
 - 검토 중 명령을 실행하면 Git 상태나 서버 상태가 바뀔 수 있으므로 위 내용은 인계 시점 기준입니다.
@@ -32,7 +31,6 @@ components/page-fortune/
   ui-model.ts               입력 검증과 D-day 표시용 순수 함수
   ui-model.test.mjs         위 순수 함수의 Node 단위 테스트
   page-fortune.module.css   화면 간격·글자·버튼·반응형 스타일
-  qa-browser.py             Hermes 브라우저 환경에서 실행하는 UI 검증
 public/
   illustrations/page-wave.svg    손을 흔드는 캐릭터
   illustrations/page-clover.svg  클로버를 든 캐릭터
@@ -87,7 +85,7 @@ git diff -- app/page.tsx app/globals.css app/layout.tsx next.config.ts
 git ls-files --others --exclude-standard
 ```
 
-새 파일은 미추적 상태이므로 기본 `git diff`에 나오지 않습니다. 새 컴포넌트는 에디터에서 직접 열어 확인하세요. 검토를 위해 임의로 스테이징하거나 커밋할 필요는 없습니다.
+커밋된 전체 변경은 `git diff main...HEAD`로 확인할 수 있습니다. `git diff`는 미커밋 변경만 표시합니다. 검토를 위해 임의로 스테이징할 필요는 없습니다.
 
 ## 현재 동작과 범위
 
@@ -174,7 +172,7 @@ npm run start -- --hostname 127.0.0.1
 - lint, TypeScript, 단위 테스트 2개, 프로덕션 빌드 통과.
 - 실제 프로덕션 서버에서 브라우저 체크 70개 통과. 숫자 0~9, 빈 값·복수 자리·문자, 잘못된 preview URL, 재접속, PNG 다운로드, 실제 클립보드, 클립보드 거절, Web Share 미지원 대체, 운영 상태, 320/368/390/768/1280px 가로 넘침, runtime error 수집 포함.
 - 넓은 데스크톱 화면은 1366×768, 1920×1080, 2560×1440에서 입력·결과 각각 확인했고, 별도로 숫자 입력→결과 이동을 확인했습니다. 가로 넘침 없음, 콘텐츠 400px 중앙 정렬, 이미지 정상 로딩을 검증했습니다.
-- 브라우저 재실행용 `qa-browser.py`는 Hermes `browser_exec`의 helper가 주입된 환경에서 실행합니다. 일반 `python qa-browser.py` 용이 아닙니다. 실행 중 앱은 로컬 3000번 포트여야 합니다.
+- 검증에 사용한 로컬 브라우저 자동화·캡처 도구는 앱 소스와 분리해 저장소 밖에 보관합니다. 서비스 기능인 결과 카드 PNG 저장은 `result-screen.tsx`에 유지합니다.
 - PNG 저장 실제 파일과 한글 가독성은 이미지를 열어 확인했습니다.
 
 산출물은 `~/Downloads/page-fortune/`에 저장됩니다.
