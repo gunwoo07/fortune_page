@@ -4,11 +4,32 @@
 
 ---
 
-## 🚀 오늘의 주요 구현 내용 (`feat/fortune_engine`)
+## 백엔드 개발 현황
 
-- **백엔드 엔진 구현 (`lib/fortune.ts`)**: 한국 시간 기준 날짜 및 D-day 계산 로직, `getFortune` 순수 함수 완성[cite: 1, 2].
-- **콘텐츠 데이터 분리 (`content/fortunes.ts`)**: D-day 구간별(`D-60+`, `D-59~30`, `D-29~7`, `D-6~1`, `D-day`) 개인 운세 문구 및 날짜별 공통 응원 문구 구조화[cite: 1, 2].
-- **타입 안정성 강화**: **`package.json`** 파일에 **`typecheck`** (`tsc --noEmit`) 스크립트 추가 및 프로덕션 빌드 검증 완료.
+- 날짜/D-day 로직은 `lib/date.ts`, 캠페인 시험일과 시작일 설정은 `config/campaign.ts`에서 관리합니다.
+- `getFortune(date, digit)`은 운세 결과 데이터를 반환하고, `validateFortuneDate(date, today)`는 공유 경로에서 날짜가 실제 날짜인지, 미래/운영 종료 날짜인지 확인합니다.
+- 캠페인 시작일은 아직 정해지지 않아 `CAMPAIGN_START_DATE`가 `null`입니다. 시작일이 정해지면 해당 설정을 채워 운영 전 날짜를 차단합니다.
+- 일일 키워드 배정표와 전체 콘텐츠 검증은 아직 후속 작업입니다.
+
+## 결과 계약과 사용 흐름
+
+프런트엔드는 엔진 내부 배정 규칙을 구현하지 않고 결과 데이터만 화면에 표시합니다.
+
+1. 화면 또는 결과 경로가 한국 날짜를 얻고 `validateFortuneDate(date, today)`를 호출합니다.
+2. 오류 코드가 반환되면 코드에 맞는 미래 날짜/운영 종료/잘못된 날짜 안내를 표시합니다.
+3. 검증을 통과한 날짜와 `0~9` 숫자를 `getFortune(date, digit)`에 전달합니다.
+4. 반환되는 `FortuneResult`의 날짜, 숫자, D-day, 개인 문구, 공통 문구, 결과 ID를 화면에 표시합니다.
+
+이 경계를 두면 UI가 바뀌어도 날짜 계산과 콘텐츠 배정은 그대로 재사용할 수 있고, 같은 입력 결과를 홈과 공유 경로에서 동일하게 표시할 수 있습니다.
+
+## 검증 명령
+
+```bash
+npm test
+npm run lint
+npm run typecheck
+npm run build
+```
 
 ---
 
