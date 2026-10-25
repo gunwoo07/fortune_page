@@ -1,189 +1,142 @@
-# 페이지 부적 — A 프런트엔드 인계
+# A 프런트엔드 검토 가이드
 
-작업 브랜치: `feat/fancyui`. 사용자 제공 입력/결과 스케치를 기준으로 한 UI입니다.
+## 이번 작업의 범위
 
-## 검토 시작점과 현재 Git 상태
+- 작업 브랜치: `feat/fancyui`.
+- 사용자 승인에 따라 B 코드가 반영된 `origin/main`을 이 브랜치에 병합했습니다. A를 `main`에 병합한 것은 아닙니다.
+- B의 `lib/`, `config/`, `content/`, `scripts/`, 패키지/lockfile은 `origin/main`과 동일하게 유지합니다.
+- **A는 홈·입력·결과 UI·공유 상호작용·상태 화면을 담당합니다. `/r/[date]/[digit]`와 OG는 B 담당으로 남겨뒀습니다.**
+- 기존 `preview` query 분기와 고정 예시 데이터를 제거했습니다. 홈에 날짜/운세 예시를 실제 동작처럼 보여주지 않습니다.
 
-- 작업 브랜치는 `feat/fancyui`이며 원격 `origin/feat/fancyui`에 푸시합니다. 현재 상태와 커밋은 `git status`와 `git log`로 확인하세요. `main`에는 직접 반영하지 않았습니다.
-- 검토 요청 시 실행 중이던 프로덕션 서버를 종료했고, 로컬 3000번 포트가 닫힌 것을 확인했습니다.
-- 먼저 이 문서의 파일 지도와 데이터 흐름을 읽고 `app/page.tsx` → `preview-input.tsx` → `input-screen.tsx` → `result-screen.tsx` 순서로 보면 됩니다.
-- 검토 중 명령을 실행하면 Git 상태나 서버 상태가 바뀔 수 있으므로 위 내용은 인계 시점 기준입니다.
+## 먼저 알아둘 미완성 연결
 
-## 수정·추가 파일 지도
+현재 이 브랜치에는 B의 실제 결과 라우트가 없습니다. 숫자를 확인하면 올바른 `/r/YYYY-MM-DD/숫자`로 이동하지만, **B가 라우트를 연결하기 전에는 404가 나옵니다.** 이는 전체 서비스 완성이 아니라 A 영역의 인계 상태입니다.
 
-### 기존 파일 수정
+결과 화면과 공유 기능은 B의 실제 `FortuneResult`를 넣은 저장소 밖의 독립 테스트 화면에서 확인했습니다. 검증을 위해 제품 소스에 임시 결과 라우트나 캡처 코드를 추가하지 않았습니다.
 
-- `app/page.tsx`: 기본 Next 시작 화면을 디자인 미리보기 진입점으로 교체. 서버에서 query를 읽고 입력·결과·상태 화면을 선택합니다. `Suspense`는 비동기 `searchParams` 접근을 감쌉니다.
-- `app/globals.css`: 전역 배경·기본 여백·폰트·밝은 색상 모드 지정. 세부 화면 스타일은 CSS Module에 분리했습니다.
-- `app/layout.tsx`: 한국어 문서 언어, 미리보기 메타데이터와 검색 제외 설정, 외부 Geist 폰트 제거. 공통 파일이므로 B의 리뷰가 필요합니다.
-- `next.config.ts`: Tailwind 로더 범위를 전역 CSS로 제한. CSS Module 클래스 매핑이 사라지는 문제를 수정한 공통 설정 변경입니다.
+## 계획서와 실제 파일의 대응
 
-### 새 파일
+계획서가 허용한 `components/` 안에 화면과 해당 화면에서만 사용하는 보조 코드를 모았습니다. 필요한 책임만 분리했고, B 담당 폴더를 새로 만들거나 덮어쓰지 않았습니다.
 
 ```text
+app/
+  page.tsx                       A: 실제 날짜 기반 입력/상태 화면
+  r/[date]/[digit]/               B가 연결할 영역 — 아직 없음
 components/page-fortune/
-  README.md                 이 검토·인계 문서
-  input-screen.tsx          입력 폼, 입력값/오류 상태, 숫자 검증
-  preview-input.tsx         입력 화면과 Next router를 연결하는 Client wrapper
-  preview-fixture.ts        실제 엔진과 분리된 고정 예시 데이터
-  result-screen.tsx         결과 문구, 공유, 복사, PNG 저장
-  state-screen.tsx          운영 종료/시작 전/잘못된 입력 안내 화면
-  ui-model.ts               입력 검증과 D-day 표시용 순수 함수
-  ui-model.test.mjs         위 순수 함수의 Node 단위 테스트
-  page-fortune.module.css   화면 간격·글자·버튼·반응형 스타일
+  home-view.ts                   B의 날짜 검증 결과 → A 화면 상태
+  home-input.tsx                 입력 대기·실패 안내, 홈 갱신
+  home-actions.ts                홈 제출 Server Action → 정규 결과 경로로 이동
+  input-screen.tsx               숫자 입력 폼과 검증 안내
+  result-screen.tsx              서버 렌더링 결과 본문
+  result-actions.tsx             브라우저 공유·링크 복사·저장 버튼
+  card-image.ts                  서비스용 PNG 생성·다운로드
+  card-layout.ts                 PNG 줄바꿈·높이 계산
+  state-screen.tsx               시작 전·종료·오류 안내
+  ui-model.ts                    숫자 입력 검증과 D-day 표시
+  page-fortune.module.css        화면별 스타일과 반응형
+  *.test.ts                      위 계약과 화면에 대한 Vitest 테스트
+  README.md                      이 문서
 public/
-  illustrations/page-wave.svg    손을 흔드는 캐릭터
-  illustrations/page-clover.svg  클로버를 든 캐릭터
-  fonts/page-korean.woff2        로컬 한글 웹폰트
-  fonts/OFL.txt                  폰트 라이선스
+  illustrations/                 손그림 SVG 두 개
+  fonts/                         로컬 한글 폰트와 OFL 라이선스
+lib/, config/, content/, scripts/ B의 기존 구현 — A에서 수정하지 않음
 ```
 
-## 구조와 데이터 흐름
+`preview-input.tsx`, `preview-fixture.ts`는 삭제했습니다. 기존 Node 전용 `ui-model.test.mjs`는 B의 `npm test`와 함께 실행되도록 Vitest의 `ui-model.test.ts`로 옮겼습니다.
+
+## 추천 리뷰 순서
+
+### 1. `app/page.tsx` → `home-view.ts`
 
 ```text
 GET /
-  app/page.tsx [Server + Suspense]
-    └─ PreviewInput [Client: 라우터와 pending 상태]
-         └─ InputScreen [Client: 입력값·오류 상태]
-              └─ parseDigit(value)
-                   ├─ 유효하지 않음 → 오류 안내, 입력칸 포커스
-                   └─ 0~9 → onConfirm(digit)
-                        └─ router.push('/?preview=result&digit=숫자')
-
-GET /?preview=result&digit=8
-  app/page.tsx [Server: query 검사]
-    ├─ 숫자 오류 → StateScreen(kind='invalid')
-    └─ previewResult(8) → FortuneResult
-         └─ ResultScreen [Client]
-              ├─ 개인 운세·공통 응원·D-day 표시
-              ├─ 공유 → navigator.share → 실패/미지원 시 링크 복사
-              ├─ 복사 → Clipboard API → 거절 시 수동 복사 입력칸
-              └─ 저장 → Canvas에 글·SVG 그림 → PNG 다운로드
+  → connection(): 요청 시점에 실행
+  → B의 getSeoulDateString(): 한국 날짜
+  → B의 validateFortuneDate(today, today)
+  → A의 화면 상태로 변환
+      active      → HomeInput
+      not-started → StateScreen
+      closed      → StateScreen
+      invalid     → StateScreen
 ```
 
-- 서버 쪽은 화면 선택과 예시 데이터 전달만 합니다. 브라우저 API는 Client Component의 클릭 핸들러 안에서만 호출합니다.
-- `InputScreen`은 경로를 모르고 `onConfirm`만 호출합니다. B가 실제 날짜를 붙이는 라우팅으로 교체하기 쉽게 분리했습니다.
-- `ResultScreen`은 운세를 생성하지 않습니다. 기존 `FortuneResult`와 공유 경로를 받아 렌더링합니다.
-- 날짜 계산·키워드 배정·운영 정책을 A의 화면 코드에 중복 구현하지 않았습니다.
+`home-view.ts`는 캠페인 규칙을 새로 정의하지 않습니다. B가 반환한 오류 코드를 화면 이름에 대응시키고, 정상일 때 B의 `calculateDday()` 값을 전달합니다. 날짜를 빌드 시점에 고정하지 않도록 서버의 요청 경계를 명시했습니다.
 
-## 코드 검토 체크포인트
+### 2. `home-input.tsx` → `input-screen.tsx` → `home-actions.ts`
 
-1. **데모와 실제 서비스의 경계:** `preview-fixture.ts`의 날짜·D-40은 고정 예시입니다. 출시 시 홈을 실제 엔진으로 연결하고 미리보기 메타데이터/noindex 정책을 재검토해야 합니다.
-2. **입력:** `0`이 유효한지, 빈 값·여러 자리·문자·전각 숫자가 거절되는지 확인하세요. 에러 메시지와 `aria-invalid`, 입력칸 포커스를 함께 처리합니다.
-3. **공유:** 권한 거절이나 미지원 환경에서 성공했다고 표시하지 않는지, 수동 복사 대체 수단이 있는지 확인하세요. 네이티브 공유 취소는 오류로 표시하지 않습니다.
-4. **이미지 저장:** 화면을 그대로 캡처하는 라이브러리가 아니라 Canvas로 별도 구성합니다. 그래서 화면 스타일을 바꾸면 저장 이미지 쪽 간격/폰트도 함께 검토해야 합니다. 긴 문구의 고정 높이 제한은 아래 알려진 제한을 참고하세요.
-5. **공통 변경:** `layout.tsx`와 `next.config.ts` 변경 이유를 우선 확인하세요. 패키지/lockfile 변경은 없습니다.
-6. **넓은 화면:** 화면 전체를 늘리는 방식이 아니라 콘텐츠를 최대 400px로 중앙 정렬합니다. 낮은 화면에서는 세로 스크롤이 정상 동작입니다.
-7. **남은 통합:** B의 실제 `/r` 경로와 OG는 아직 없습니다. 현재 오류 preview 화면의 HTTP 200을 실제 오류 라우트 정책으로 오해하지 마세요.
+- `InputScreen`은 경로를 모르고, 유효한 숫자만 `onConfirm`으로 전달합니다.
+- 빈 값·여러 자리·문자·전각 숫자를 거절하며 `0`은 정상 입력입니다.
+- 요청 중 버튼을 잠그고, 통신 실패는 폼의 안내 영역에 표시합니다.
+- `HomeInput`은 Server Action인 `submitDigit()`을 호출합니다.
+- `submitDigit()`은 입력 숫자를 서버에서 재검증하고, **제출 시점의 한국 날짜와 운영 상태를 다시 확인**합니다.
+- 운영 중이면 `/r/날짜/숫자`로, 시작 전/종료 상태면 `/`로 이동합니다.
+- 서버 날짜를 기준으로 하므로 자정 전에 연 폼이나 잘못 설정된 기기 시계로 전날 결과를 새로 만들지 않습니다.
+- 열린 탭은 30초마다, 다시 돌아온 탭은 즉시 서버 화면을 갱신합니다. 화면 갱신 지연과 무관하게 제출 날짜는 서버에서 바로 재검증합니다.
 
-### diff 확인 명령
+### 3. `result-screen.tsx` → `result-actions.tsx`
 
-```bash
-cd /home/hermespi/projects/fortune_page
-git status --short --branch
-git diff -- app/page.tsx app/globals.css app/layout.tsx next.config.ts
-git ls-files --others --exclude-standard
-```
-
-커밋된 전체 변경은 `git diff main...HEAD`로 확인할 수 있습니다. `git diff`는 미커밋 변경만 표시합니다. 검토를 위해 임의로 스테이징할 필요는 없습니다.
-
-## 현재 동작과 범위
-
-- `/`: 숫자 한 자리 입력 → 확인 → 결과 미리보기.
-- `/?preview=result&digit=8`: 재접속 가능한 디자인 미리보기 링크. **실제 `/r/날짜/숫자` 결과 링크가 아닙니다.**
-- `/?preview=closed`, `/?preview=not-started`, `/?preview=invalid`: 운영 종료·시작 전·오류 화면.
-- 흰 배경, 큰 D-day, 손그림 SVG 캐릭터, 회색 입력칸/버튼. 초록색은 클로버에만 사용합니다.
-- 공유 API, 클립보드 복사 및 권한 거절 시 수동 복사, 클라이언트 PNG 저장.
-- PNG는 1200×2400이고 버튼이 포함되지 않습니다. 미리보기 이미지에는 예시임을 명시합니다.
-- 키워드·등급은 화면에 표시하지 않습니다.
-
-`preview-fixture.ts`의 D-40, 날짜, 문장은 **고정 디자인 예시**입니다. 모든 숫자에 같은 문구가 나오는 것이 의도된 미리보기 동작입니다. 실제 운세나 날짜 계산을 구현한 것이 아니며, 페이지 하단과 이미지에 명시했습니다. 외부 배포용 MVP로 간주하지 마세요.
-
-## B가 연결할 계약
-
-기존 `lib/types.ts`의 `FortuneResult`를 그대로 사용합니다. `lib/`, `config/`, `content/`, `data/`, `/r` 및 OG 라우트, `package.json`과 lockfile은 수정하지 않았습니다.
-
-### 입력 화면
-
-`InputScreen`은 다음 props만 필요합니다.
-
-```tsx
-<InputScreen
-  dday={serverCalculatedDday}
-  pending={pending}
-  onConfirm={(digit) => {
-    // Client wrapper에서 router.push(`/r/${serverCalculatedDate}/${digit}`)
-  }}
-/>
-```
-
-- `onConfirm`은 클라이언트 콜백입니다. Server Component에서 함수를 직접 전달하지 말고, 현재 `preview-input.tsx` 같은 Client wrapper에서 라우팅하세요.
-- A의 `parseDigit`은 입력칸 표시 검증일 뿐입니다. B는 실제 공유 경로의 날짜·숫자를 서버에서 별도로 검증해야 합니다.
-- 서버가 계산한 날짜·D-day를 함께 전달하고, 날짜가 바뀔 때 새로고침/갱신 정책을 적용하세요. A는 한국 자정 계산이나 캠페인 설정을 중복 구현하지 않았습니다.
-
-### 결과 화면
-
-B의 서버 결과 라우트에서 검증된 데이터를 넘기면 됩니다.
+`ResultScreen`은 서버에서 렌더링할 수 있는 컴포넌트입니다. B가 다음 두 props를 전달하면 됩니다.
 
 ```tsx
 <ResultScreen
-  result={result}
+  result={result} // 기존 lib/types.ts의 FortuneResult
   sharePath={`/r/${result.date}/${result.digit}`}
 />
 ```
 
-- `preview` 기본값은 `false`입니다. 실제 라우트에서는 지정하지 않습니다.
-- `sharePath`는 B가 만든 검증된 canonical 경로입니다. 이 컴포넌트가 운세를 조회하거나 OG를 생성하지 않습니다.
-- 결과 UI는 `personalMessage`, `commonMessage`, `dday`를 표시합니다. 저장 이미지에는 날짜·숫자도 들어갑니다.
-- Web Share 미지원/실패 시 링크 복사로 대체합니다. 사용자가 공유를 취소하면 오류 메시지를 표시하지 않습니다.
-- 브라우저 다운로드와 네이티브 공유의 최종 저장/수신 여부까지 사이트가 확인할 수는 없습니다.
+- 본문에는 D-day·개인 운세·공통 응원과 그림을 표시하며 내부 키워드는 표시하지 않습니다.
+- 이 컴포넌트는 `getFortune()`을 호출하거나 OG를 생성하지 않습니다.
+- 브라우저 API는 하위 `ResultActions`의 클릭 처리에만 둡니다.
+- Web Share 미지원/실패 → 링크 복사, 클립보드 거절 → 수동 복사 입력칸 순으로 대체합니다.
+- 공유 취소는 오류로 표시하거나 자동 복사하지 않습니다.
 
-### 운영 상태
+### 4. `card-image.ts` → `card-layout.ts`
 
-```tsx
-<StateScreen kind="closed" />
-<StateScreen kind="not-started" />
-<StateScreen kind="invalid" />
-```
+- 서비스 기능인 결과 카드 PNG 저장 코드입니다. 검증용 화면 캡처 코드가 아닙니다.
+- Canvas로 글·SVG 그림을 그리므로 버튼이나 조작 UI가 이미지에 들어가지 않습니다.
+- 한글 폰트 로딩을 기다리고, 실제 글자 너비를 측정해 줄바꿈합니다.
+- 기본 폭 1200px, 기본 높이 2400px이며, 긴 문구는 높이를 늘려 그림/꼬리말이 잘리지 않게 합니다.
+- 화면 CSS와 Canvas는 별도 표현이므로 디자인 변경 시 양쪽을 함께 확인해야 합니다.
 
-운영 기간·미래 날짜·잘못된 URL 정책과 HTTP 상태 코드는 B가 실제 라우트에서 결정합니다. 현재 preview 쿼리의 오류 화면은 시각적 예시이며 HTTP 200입니다.
-
-## 공통 파일 변경 — B 리뷰 필요
-
-- `app/layout.tsx`: 한국어 `lang`, 미리보기 제목/설명, `noindex`, 기존 외부 Geist 폰트 로딩 제거. 실제 출시 메타데이터와 `robots` 설정으로 교체해야 합니다.
-- `app/globals.css`: 밝은 배경 고정, 기본 초기화, 로컬 한글 웹폰트 등록.
-- `next.config.ts`: Tailwind 커스텀 로더 대상을 `*.css`에서 `globals.css`로 좁혔습니다. 기존 `as: '*.css'`가 CSS Module 파일까지 일반 CSS로 처리해 클래스 매핑이 비는 현상을 브라우저에서 재현했습니다. 수정 후 실제 클래스명과 D-day 60px 적용을 확인했습니다.
-- `public/fonts/page-korean.woff2`: Noto Sans KR 가변 폰트의 한글/라틴/기본 문장부호 서브셋. SIL OFL 라이선스는 같은 폴더 `OFL.txt`에 동봉. 외부 폰트 요청 없이 한글을 표시합니다.
-- 현재 폰트 서브셋은 전체 한자를 포함하지 않습니다. 콘텐츠에 한자를 도입하면 폴백/서브셋을 다시 검토하세요.
-
-## 검증
-
-패키지 스크립트 소유권을 유지하기 위해 `package.json`에 명령을 추가하지 않았습니다.
+## 테스트 결과와 재실행
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
+npm ci
 npm run lint
-npx tsc --noEmit
-node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test components/page-fortune/ui-model.test.mjs
+npm run typecheck
+npm test
+npm run validate:content
 npm run build
 npm run start -- --hostname 127.0.0.1
 ```
 
-- lint, TypeScript, 단위 테스트 2개, 프로덕션 빌드 통과.
-- 실제 프로덕션 서버에서 브라우저 체크 70개 통과. 숫자 0~9, 빈 값·복수 자리·문자, 잘못된 preview URL, 재접속, PNG 다운로드, 실제 클립보드, 클립보드 거절, Web Share 미지원 대체, 운영 상태, 320/368/390/768/1280px 가로 넘침, runtime error 수집 포함.
-- 넓은 데스크톱 화면은 1366×768, 1920×1080, 2560×1440에서 입력·결과 각각 확인했고, 별도로 숫자 입력→결과 이동을 확인했습니다. 가로 넘침 없음, 콘텐츠 400px 중앙 정렬, 이미지 정상 로딩을 검증했습니다.
-- 검증에 사용한 로컬 브라우저 자동화·캡처 도구는 앱 소스와 분리해 저장소 밖에 보관합니다. 서비스 기능인 결과 카드 PNG 저장은 `result-screen.tsx`에 유지합니다.
-- PNG 저장 실제 파일과 한글 가독성은 이미지를 열어 확인했습니다.
+- Vitest: B 엔진 검사 포함 **73개 통과**.
+- lint, typecheck, 콘텐츠 검증, 프로덕션 빌드 통과.
+- 별도의 브라우저 검사 **73개 통과**: 실제 홈 D-day, 0~9 제출 경로, 입력 오류, 폐기한 preview 파라미터 무시, 실제 클립보드, 공유 대체·취소·실패, PNG 다운로드/오류, 시작 전·시험 당일·종료 화면 포함.
+- 화면 폭 320/390/1366/1920/2560px에서 가로 넘침을 확인했습니다.
+- 짧은 카드 PNG 1200×2400, 긴 카드 PNG 1200×4608을 실제 다운로드해 확인했습니다.
+- B 결과 라우트 미구현으로 발생하는 404는 **통합 미완료로 명시**하고 테스트했습니다. 결과 페이지가 동작한다고 보고하지 않습니다.
+- 독립 코드 리뷰에서도 A 범위의 보안·로직 오류가 발견되지 않았습니다. 개선 제안은 공유/클립보드/이미지 실패 같은 클라이언트 분기를 CI에서 재현할 회귀 테스트를 추가하는 것입니다. 해당 분기는 저장소 밖의 실제 브라우저 검사로 검증했지만, 현재 체크인된 Vitest 테스트가 그 브라우저 검사를 대체하지는 않습니다.
+- 실기기 iOS/Android 공유 시트와 배포된 OG/카카오톡 검증은 B의 라우트 통합 후 별도로 필요합니다.
 
-산출물은 `~/Downloads/page-fortune/`에 저장됩니다.
+## B에게 남기는 연결 항목
 
-- `01-input-mobile.png`, `02-result-mobile.png`, `03-closed-mobile.png`, `04-input-desktop.png`
-- `page-fortune-preview-2026-10-10-0.png`: 저장 버튼으로 내려받은 카드
-- `qa-results.json`: 각 브라우저 체크 결과
+1. `app/r/[date]/[digit]/page.tsx`에서 날짜·숫자·기간/미래 날짜 검증 후 `getFortune()`으로 조회하고 `ResultScreen`을 호출합니다.
+2. 잘못된 경로의 HTTP 상태와 안내 화면을 결정합니다. UI는 `StateScreen`을 재사용할 수 있습니다.
+3. 과거 공유 링크를 홈의 현재 종료 상태와 구분해 유지하고, 결과 페이지와 OG에서 같은 결과를 사용합니다.
+4. 실제 서비스 도메인, 메타데이터와 OG를 연결합니다.
+5. 기존 A 커밋의 `layout.tsx`(검색 제외/미리보기 기본 메타데이터)와 `next.config.ts`(CSS Module 로더 범위)를 공통 파일 소유자가 리뷰합니다. 이번 수정에서는 이 공통 파일을 추가 변경하지 않았습니다. 홈의 제목·설명만 `app/page.tsx`에서 설정했습니다.
+6. `npm audit`에서 기존 개발 의존성인 Vitest 관련 3건(critical 2, moderate 1)이 보고됐습니다. 패키지 소유자와 별도 보안 업데이트 검토가 필요하며 A가 버전을 바꾸지 않았습니다.
 
-## 남은 검증과 알려진 제한
+## Git 검토 명령
 
-- 독립 코드 리뷰에서 현재 미리보기 범위의 보안/로직 오류는 발견되지 않았습니다. 비차단 제안: PNG는 고정 높이이므로 B가 긴 문장을 도입하면 줄 수에 따른 높이 계산 또는 콘텐츠 길이 제한을 추가해야 합니다. 현재 짧은 예시 문구의 PNG는 잘림 없이 확인했습니다.
-- 실제 iPhone Safari/Android Chrome, OS 공유 시트, 카카오톡 크롤러/OG는 B 통합 후 실제 기기와 배포 URL에서 확인해야 합니다. 데스크톱 Chromium 뷰포트 검사가 실기기 검사를 대신하지 않습니다.
-- 엔진·실제 날짜·캠페인 종료 판정·공유 라우트·OG는 B 영역입니다.
-- 기존 Next.js 16.4.0의 보안 취약점은 미해결입니다. 빌드가 보안 경고로 한 번 중단됐고 같은 명령 재실행에서 성공했습니다. 배포 전에 별도 검토/업데이트가 필요하며 A가 패키지 버전을 임의로 바꾸지 않았습니다.
+```bash
+git status --short --branch
+git diff HEAD -- app/page.tsx components/page-fortune
+git ls-files --others --exclude-standard
+# B 소유 파일은 origin/main 대비 변경이 없어야 합니다.
+git diff origin/main -- lib config content scripts package.json package-lock.json
+```
+
+테스트 자동화·독립 UI 테스트 화면·캡처 산출물은 저장소 밖에 보관합니다. 로컬 산출물은 `~/Downloads/page-fortune/a-review-20261025/`에 있고, 앱에 이 경로를 하드코딩하지 않았습니다.
