@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate:assignments": "tsx scripts/generate-assignments.ts",
+    "validate:content": "tsx scripts/validate-content.ts"
   },
   "dependencies": {
     "next": "^16.4.3",
@@ -23,6 +25,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^3.2.7"
   }

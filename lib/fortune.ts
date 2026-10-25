@@ -1,51 +1,75 @@
-import { FortuneResult } from './types';
-import { calculateDday } from './date';
-import { PERSONAL_MESSAGES, COMMON_MESSAGES, DEFAULT_COMMON_MESSAGE } from '../content/fortunes';
+import type { FortuneResult } from "./types";
+import { CAMPAIGN_START_DATE, EXAM_DATE } from "../config/campaign";
+import { calculateDday, isValidDateString } from "./date";
+import { ASSIGNMENTS } from "../content/assignments.generated";
+import { KEYWORDS, type FortuneKeyword } from "../content/keywords";
+import {
+  COMMON_MESSAGES,
+  PERSONAL_MESSAGES,
+  type DdayRange,
+} from "../content/fortunes";
+
+export type FortuneInputErrorCode =
+  | "invalid-date"
+  | "invalid-digit"
+  | "before-campaign"
+  | "campaign-ended"
+  | "content-unavailable";
+
+export class FortuneInputError extends RangeError {
+  constructor(public readonly code: FortuneInputErrorCode) {
+    super(`운세 결과를 만들 수 없는 입력입니다: ${code}`);
+    this.name = "FortuneInputError";
+  }
+}
+
+function getDdayRange(dday: number): DdayRange {
+  if (dday === 0) return "D-day";
+  if (dday >= 1 && dday <= 6) return "D-6~1";
+  if (dday >= 7 && dday <= 29) return "D-29~7";
+  if (dday >= 30 && dday <= 59) return "D-59~30";
+  return "D-60+";
+}
+
+function isFortuneKeyword(value: string): value is FortuneKeyword {
+  return KEYWORDS.some((keyword) => keyword === value);
+}
 
 /**
- * 날짜와 선택한 숫자를 받아 해당 일자의 운세 결과 객체를 반환하는 순수 함수
- * @param date YYYY-MM-DD 형식의 문자열 (예: "2026-10-13")
- * @param digit 0부터 9 사이의 선택된 숫자
+ * 날짜와 페이지 끝자리를 받아 같은 입력에 항상 같은 결과를 반환합니다.
+ * 미래 날짜는 호출 전에 validateFortuneDate(date, today)로 걸러야 합니다.
  */
 export function getFortune(date: string, digit: number): FortuneResult {
-  // 1. 숫자 범위 검증 (0~9 사이의 정수가 아니면 안전하게 예외 처리)
-  if (digit < 0 || digit > 9 || !Number.isInteger(digit)) {
-    throw new Error('선택된 숫자는 0부터 9 사이의 정수여야 합니다.');
+  if (!isValidDateString(date)) {
+    throw new FortuneInputError("invalid-date");
   }
 
-  // 2. 날짜 형식 검증 (간단한 YYYY-MM-DD 정규식 체크)
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(date)) {
-    throw new Error('날짜 형식은 YYYY-MM-DD여야 합니다.');
+  if (!Number.isInteger(digit) || digit < 0 || digit > 9) {
+    throw new FortuneInputError("invalid-digit");
   }
 
-  // 3. D-day 계산 함수 호출
+  if (date < CAMPAIGN_START_DATE) {
+    throw new FortuneInputError("before-campaign");
+  }
+
+  if (date > EXAM_DATE) {
+    throw new FortuneInputError("campaign-ended");
+  }
+
   const dday = calculateDday(date);
+  const dDayRange = getDdayRange(dday);
+  const dailyAssignment = ASSIGNMENTS[date];
+  const assignedKeyword = dailyAssignment?.[digit];
+  const commonMessage = COMMON_MESSAGES[date];
 
-  // 4. D-day 구간 판별 (계획서 기준 5개 구간)
-  let dDayRange = 'D-60+';
-  if (dday === 0) {
-    dDayRange = 'D-day';
-  } else if (dday >= 1 && dday <= 6) {
-    dDayRange = 'D-6~1';
-  } else if (dday >= 7 && dday <= 29) {
-    dDayRange = 'D-29~7';
-  } else if (dday >= 30 && dday <= 59) {
-    dDayRange = 'D-59~30';
-  } else {
-    dDayRange = 'D-60+';
+  if (!assignedKeyword || !isFortuneKeyword(assignedKeyword) || !commonMessage) {
+    throw new FortuneInputError("content-unavailable");
   }
 
-  // 5. 결과 ID 생성 (공유 카드나 분석에 활용할 고유 식별자)
-  const resultId = `${date}-${digit}`;
-
-  // 6. 날짜와 숫자에 따른 개인 운세 문구 선택 
-  const messagesForRange = PERSONAL_MESSAGES[dDayRange] || PERSONAL_MESSAGES['D-60+'];
-  const messageIndex = (digit + parseInt(date.replaceAll('-', ''), 10)) % messagesForRange.length;
-  const personalMessage = messagesForRange[messageIndex];
-
-  // 7. 날짜별 공통 응원 문구 선택 (없으면 기본 응원 문구 사용)
-  const commonMessage = COMMON_MESSAGES[date] || DEFAULT_COMMON_MESSAGE;
+  const personalMessage = PERSONAL_MESSAGES[assignedKeyword][dDayRange];
+  if (!personalMessage) {
+    throw new FortuneInputError("content-unavailable");
+  }
 
   return {
     date,
@@ -53,6 +77,6 @@ export function getFortune(date: string, digit: number): FortuneResult {
     dday,
     personalMessage,
     commonMessage,
-    resultId,
+    resultId: `${date}-${digit}`,
   };
 }

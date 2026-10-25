@@ -48,6 +48,14 @@ describe("getSeoulDateString", () => {
 });
 
 describe("validateFortuneDate", () => {
+  it("enforces the two-month pre-exam campaign start and exam-day end", () => {
+    expect(validateFortuneDate("2026-09-18", "2026-09-19")).toBe(
+      "before-campaign",
+    );
+    expect(validateFortuneDate("2026-09-19", "2026-09-19")).toBeNull();
+    expect(validateFortuneDate("2026-11-19", "2026-11-19")).toBeNull();
+  });
+
   it("allows past dates through the exam date, but rejects future and post-exam dates", () => {
     expect(validateFortuneDate("2026-10-24", "2026-10-25")).toBeNull();
     expect(validateFortuneDate("2026-10-26", "2026-10-25")).toBe(
