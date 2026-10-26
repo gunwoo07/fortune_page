@@ -1,6 +1,6 @@
 # 페이지 부적 (Fortune Page MVP)
 
-수능 수험생이 오늘의 페이지 끝자리 숫자를 선택해 짧은 개인 운세와 공통 응원을 확인하는 모바일 웹 서비스입니다. 결과 공유 기능은 MVP 목표이며, 현재 프런트엔드 화면과 공유 경로는 아직 구현 중입니다.
+수능 수험생이 오늘의 페이지 끝자리 숫자를 선택해 짧은 개인 운세와 공통 응원을 확인하는 모바일 웹 서비스입니다. 결과 공유 경로와 결과별 공유 미리보기(OG)가 연결되어 있습니다.
 
 ## 시작하기
 
@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)을 엽니다. 현재 홈 화면은 Next.js 시작 템플릿이며, 운세 엔진은 구현되어 있지만 화면과 연결되지는 않았습니다.
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 엽니다. 홈에서 숫자를 입력하면 오늘의 결과 페이지로 이동합니다.
 
 ## 현재 구현 상태
 
@@ -24,10 +24,14 @@ npm run dev
 - `lib/assignments.ts`, `content/assignments.generated.ts`: 62일 동안 숫자 0~9에 키워드를 배정합니다. 하루 안에 키워드는 중복되지 않고, 같은 숫자의 키워드는 전날과 다릅니다.
 - `content/keywords.ts`, `content/fortunes.ts`: 키워드 및 D-day 구간별 개인 운세와 날짜별 공통 응원
 - `lib/fortune.ts`: 날짜와 숫자로 운세 결과를 생성하는 엔진
-- `lib/fortune-api.ts`: 프런트엔드에서 사용할 엔진 함수와 타입의 진입점
+- `lib/fortune-api.ts`: 프런트엔드에서 사용할 엔진 함수, 공유 결과 검증 함수와 타입의 진입점
+- `app/r/[date]/[digit]/page.tsx`: 공유 URL에서 날짜·숫자를 검증해 결과를 서버 렌더링
+- `app/r/[date]/[digit]/opengraph-image.tsx`: 결과별 Open Graph 이미지 생성
+- `lib/site-url.ts`: canonical URL과 공유 미리보기에 사용할 공개 사이트 주소
+- `components/page-fortune/`: 홈 입력, 결과 및 오류 상태 화면과 공유 동작
 - `lib/*.{test.ts}`: 날짜·엔진·배정·콘텐츠·결과 계약 테스트
 
-숫자와 날짜가 같으면 같은 결과가 반환됩니다. 내부 키워드는 결과 객체에 포함하지 않습니다. 공유 URL과 OG 미리보기 등 사용자 대상 프런트엔드 흐름은 아직 구현되지 않았습니다.
+숫자와 날짜가 같으면 같은 결과가 반환됩니다. 과거의 유효한 공유 링크는 재현되며, 미래 날짜와 잘못된 입력은 찾을 수 없음 안내로 처리합니다. 내부 키워드는 결과 객체에 포함하지 않습니다. 검색 색인은 출시 전까지 비활성화되어 있지만, 공유 크롤러용 메타데이터와 OG 이미지는 제공됩니다.
 
 ## 결과 엔진 사용법
 
@@ -67,14 +71,22 @@ npm run build               # 프로덕션 빌드
 npm start                   # 빌드된 앱 실행
 ```
 
+배포 환경은 `SITE_URL`에 공개 사이트의 원본 주소(예: `https://fortune.example.com`)를 설정해야 합니다. Vercel에서는 `VERCEL_PROJECT_PRODUCTION_URL` 또는 `VERCEL_URL`을 사용할 수 있습니다.
+
 배정표를 수정하거나 재생성한 뒤에는 `npm run validate:content`와 `npm test`를 실행하세요.
 
 ## 프로젝트 구조
 
 ```text
 app/
+  r/[date]/[digit]/
+    page.tsx
+    not-found.tsx
+    opengraph-image.tsx
   layout.tsx
   page.tsx
+components/
+  page-fortune/
 config/
   campaign.ts
 content/
@@ -87,12 +99,15 @@ lib/
   date.ts
   fortune-api.ts
   fortune.ts
+  site-url.ts
+  shared-result.test.ts
+  site-url.test.ts
 scripts/
   generate-assignments.ts
   validate-content.ts
 ```
 
-공유 결과 경로, OG 이미지, 재사용 UI 컴포넌트는 아직 추가되지 않았습니다.
+공유 결과 경로, 재사용 UI 컴포넌트, 결과별 OG 이미지와 메타데이터가 연결되었습니다.
 
 ## Next.js 참고 자료
 
