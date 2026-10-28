@@ -7,7 +7,7 @@ import {
   getSharedFortuneResult,
 } from "@/lib/fortune-api";
 import { ResultScreen } from "@/components/page-fortune/result-screen";
-import { ddayLabel } from "@/components/page-fortune/ui-model";
+import { formatResultDate } from "@/components/page-fortune/ui-model";
 import styles from "@/components/page-fortune/page-fortune.module.css";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -32,9 +32,11 @@ export async function generateMetadata({
   const sharePath = `/r/${result.date}/${result.digit}`;
   const shareUrl = new URL(sharePath, getSiteUrl());
   const imageUrl = new URL(`${sharePath}/opengraph-image`, getSiteUrl());
-  const title = `수능 ${ddayLabel(result.dday)} · 페이지 끝자리 ${result.digit} | 페이지 부적`;
-  const description = `${result.personalMessage} ${result.commonMessage}`;
-  const imageAlt = `수능 ${ddayLabel(result.dday)}, 페이지 끝자리 ${result.digit}의 운세 결과`;
+  // 이미지 URL에 버전을 붙여 이전 텍스트 카드의 이미지 캐시와 구분합니다.
+  imageUrl.searchParams.set("v", "clover-1");
+  const title = formatResultDate(result.date);
+  const description = "페이지 부적";
+  const imageAlt = "네잎클로버를 들고 있는 손그림 캐릭터";
 
   return {
     title,
