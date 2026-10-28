@@ -8,8 +8,9 @@ import { StateScreen } from "@/components/page-fortune/state-screen";
 import styles from "@/components/page-fortune/page-fortune.module.css";
 
 export const metadata: Metadata = {
-  title: "페이지 부적",
-  description: "오늘 처음 펼친 책의 마지막 자리에서 만나는 작은 응원.",
+  title: "수능 페이지 부적 | 오늘의 수험생 응원",
+  description:
+    "책 페이지의 숫자로 오늘의 작은 운세와 수능 응원을 만나보세요. 오늘도 수험생 모두를 응원합니다.",
 };
 
 async function TodayScreen() {
