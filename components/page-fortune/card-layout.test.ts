@@ -8,6 +8,10 @@ describe("card text wrapping", () => {
     expect(wrapCardText("가나다라마\n바", measure, 3)).toEqual(["가나다", "라마", "바"]);
   });
 
+  it("prefers word boundaries so the last Korean syllable is not orphaned", () => {
+    expect(wrapCardText("가나다 라마 바사", measure, 5)).toEqual(["가나다", "라마 바사"]);
+  });
+
   it("does not split a Unicode code point", () => {
     expect(wrapCardText("🍀🍀🍀", measure, 2)).toEqual(["🍀🍀", "🍀"]);
   });
@@ -18,20 +22,26 @@ describe("card text wrapping", () => {
 });
 
 describe("card image layout", () => {
-  it("preserves the short-message sketch proportions", () => {
+  it("centers a larger illustration beneath the messages on a portrait card", () => {
     expect(calculateCardLayout(2, 1)).toMatchObject({
-      commonTop: 460,
-      illustrationTop: 535,
+      titleTop: 88,
+      personalTop: 155,
+      commonTop: 254,
+      illustrationTop: 360,
+      illustrationLeft: 105,
+      illustrationWidth: 190,
+      illustrationHeight: 258,
       height: 800,
-      footerTop: 775,
+      footerTop: 768,
     });
   });
 
   it("grows the image instead of clipping long backend messages", () => {
     const layout = calculateCardLayout(30, 8);
-    expect(layout.commonTop).toBeGreaterThan(285 + 29 * 28);
+    expect(layout.commonTop).toBeGreaterThan(155 + 29 * 27);
     expect(layout.illustrationTop).toBeGreaterThan(layout.commonTop + 7 * 26);
-    expect(layout.footerTop).toBeGreaterThan(layout.illustrationTop + 190);
+    expect(layout.illustrationLeft * 2 + layout.illustrationWidth).toBe(400);
+    expect(layout.footerTop).toBeGreaterThan(layout.illustrationTop + layout.illustrationHeight);
     expect(layout.height).toBeGreaterThan(800);
   });
 });
