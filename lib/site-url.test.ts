@@ -27,9 +27,9 @@ describe("site URL configuration", () => {
     ).toBe("https://fortune.vercel.app/");
   });
 
-  it("rejects a production build without a public origin", () => {
-    expect(() => getSiteUrl({ NODE_ENV: "production" })).toThrow(
-      "SITE_URL must be set",
+  it("uses the selected Vercel domain as the production fallback", () => {
+    expect(getSiteUrl({ NODE_ENV: "production" }).href).toBe(
+      "https://fortune-page-alpha.vercel.app/",
     );
   });
 

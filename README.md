@@ -71,11 +71,11 @@ npm run build               # 프로덕션 빌드
 npm start                   # 빌드된 앱 실행
 ```
 
-배포 환경은 `SITE_URL`에 공개 사이트의 원본 주소(예: `https://fortune.example.com`)를 설정해야 합니다. Vercel에서는 `VERCEL_PROJECT_PRODUCTION_URL` 또는 `VERCEL_URL`을 사용할 수 있습니다.
+운영 사이트 주소는 Vercel 무료 제공 도메인인 `https://fortune-page-alpha.vercel.app`입니다. 운영 환경에서는 `SITE_URL`, `VERCEL_PROJECT_PRODUCTION_URL`, `VERCEL_URL` 순으로 주소를 선택하며, 앞의 환경변수가 없으면 선택한 운영 주소를 기본값으로 사용합니다. 다른 주소를 사용하려면 Vercel 프로젝트의 Production 환경 변수 `SITE_URL`에 공개 사이트 원본 주소를 지정하세요.
 
 ## 도메인 및 5일차 QA
 
-- 운영 도메인 후보는 `pagefortune.kr`로 선택했습니다. 2026-10-28 KISA/KRNIC WHOIS 조회에서 미등록 상태였고 DNS도 확인되지 않았으므로, 등록 후 DNS 연결을 마친 다음 운영 환경의 `SITE_URL`에 `https://pagefortune.kr`을 설정하세요.
+- 최종 운영 주소는 `https://fortune-page-alpha.vercel.app`입니다. Vercel이 제공하는 도메인이므로 별도의 도메인 등록이나 DNS 레코드 설정은 필요하지 않습니다. 2026-10-28 확인 시 홈은 HTTP 200이었지만 `/r/2026-10-28/4`와 결과별 `opengraph-image` 경로는 HTTP 404였습니다. 공유 결과 경로를 제공하는 현재 저장소 버전을 Vercel 운영 배포에 반영한 뒤 다시 확인해야 합니다.
 - 모바일·데스크톱 폭 320, 360, 390, 768, 1280px에서 홈과 결과 화면을 확인했고 가로 넘침은 없었습니다.
 - 날짜 경계 테스트 15개, 전체 단위 테스트 89개, 콘텐츠 검증, ESLint, TypeScript 검사와 프로덕션 빌드가 통과했습니다.
 - Vercel 미리보기 배포와 실제 iOS·Android 공유 검수는 계정·기기 확인이 필요해 남은 출시 전 작업입니다.
