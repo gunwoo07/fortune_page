@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  getCampaignStartDate,
+  getExamDate,
+} from "../config/campaign";
+import {
   calculateDday,
   getSeoulDateString,
   isValidDateString,
@@ -34,6 +38,17 @@ describe("calculateDday", () => {
   it("rejects impossible dates", () => {
     expect(() => calculateDday("2026-02-30")).toThrow(RangeError);
   });
+
+  it.each([
+    [2026, "2026-11-19", "2026-09-20"],
+    [2027, "2027-11-18", "2027-09-19"],
+    [2028, "2028-11-16", "2028-09-17"],
+  ])("calculates the third-Thursday exam campaign for %i", (year, examDate, startDate) => {
+    expect(getExamDate(year)).toBe(examDate);
+    expect(getCampaignStartDate(year)).toBe(startDate);
+    expect(calculateDday(startDate)).toBe(60);
+    expect(calculateDday(examDate)).toBe(0);
+  });
 });
 
 describe("getSeoulDateString", () => {
@@ -49,11 +64,22 @@ describe("getSeoulDateString", () => {
 
 describe("validateFortuneDate", () => {
   it("enforces the two-month pre-exam campaign start and exam-day end", () => {
-    expect(validateFortuneDate("2026-09-18", "2026-09-19")).toBe(
+    expect(validateFortuneDate("2026-09-19", "2026-09-19")).toBe(
       "before-campaign",
     );
-    expect(validateFortuneDate("2026-09-19", "2026-09-19")).toBeNull();
+    expect(validateFortuneDate("2026-09-20", "2026-09-20")).toBeNull();
     expect(validateFortuneDate("2026-11-19", "2026-11-19")).toBeNull();
+  });
+
+  it("uses each year's own campaign window", () => {
+    expect(validateFortuneDate("2027-09-18", "2027-09-18")).toBe(
+      "before-campaign",
+    );
+    expect(validateFortuneDate("2027-09-19", "2027-09-19")).toBeNull();
+    expect(validateFortuneDate("2027-11-18", "2027-11-18")).toBeNull();
+    expect(validateFortuneDate("2027-11-19", "2027-11-19")).toBe(
+      "campaign-ended",
+    );
   });
 
   it("allows past dates through the exam date, but rejects future and post-exam dates", () => {

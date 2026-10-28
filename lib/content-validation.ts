@@ -1,11 +1,12 @@
-import { ASSIGNMENTS } from "../content/assignments.generated";
+import { getExamDate } from "../config/campaign";
 import { KEYWORDS } from "../content/keywords";
 import {
-  COMMON_MESSAGES,
+  createCommonMessages,
   DDAY_RANGES,
   PERSONAL_MESSAGES,
 } from "../content/fortunes";
 import { generateAssignmentTable, getCampaignDates } from "./assignments";
+import { getSeoulDateString } from "./date";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -15,24 +16,37 @@ function isNonEmptyText(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function getUpcomingExamYear(): number {
+  const today = getSeoulDateString();
+  const currentYear = Number(today.slice(0, 4));
+  return today > getExamDate(currentYear) ? currentYear + 1 : currentYear;
+}
+
 export function validateContentAndAssignments(
-  assignments: unknown = ASSIGNMENTS,
+  assignments?: unknown,
   personalMessages: unknown = PERSONAL_MESSAGES,
-  commonMessages: unknown = COMMON_MESSAGES,
+  commonMessages?: unknown,
+  examYear = getUpcomingExamYear(),
 ): string[] {
-  // 배포물의 정적 콘텐츠가 기간 전체를 빠짐없이 채우고 생성 규칙과 일치하는지 검사합니다.
+  // 문구와 배정이 연간 캠페인 기간 전체를 빠짐없이 채우는지 검사합니다.
   const errors: string[] = [];
-  const dates = getCampaignDates();
-  const generatedAssignments = generateAssignmentTable();
+  const resolvedAssignments =
+    assignments === undefined ? generateAssignmentTable(examYear) : assignments;
+  const resolvedCommonMessages =
+    commonMessages === undefined
+      ? createCommonMessages(examYear)
+      : commonMessages;
+  const dates = getCampaignDates(examYear);
+  const generatedAssignments = generateAssignmentTable(examYear);
   const expectedDates = new Set(dates);
 
-  if (!isRecord(assignments)) {
+  if (!isRecord(resolvedAssignments)) {
     errors.push("배정표는 날짜별 객체여야 합니다.");
     return errors;
   }
 
   for (const date of dates) {
-    const daily = assignments[date];
+    const daily = resolvedAssignments[date];
     if (!Array.isArray(daily)) {
       errors.push(`${date}: 숫자별 배정 배열이 없습니다.`);
       continue;
@@ -61,7 +75,7 @@ export function validateContentAndAssignments(
 
     const dateIndex = dates.indexOf(date);
     const previous =
-      dateIndex > 0 ? assignments[dates[dateIndex - 1]] : undefined;
+      dateIndex > 0 ? resolvedAssignments[dates[dateIndex - 1]] : undefined;
     if (Array.isArray(previous)) {
       for (let digit = 0; digit < daily.length; digit += 1) {
         if (daily[digit] === previous[digit]) {
@@ -71,7 +85,7 @@ export function validateContentAndAssignments(
     }
   }
 
-  for (const date of Object.keys(assignments)) {
+  for (const date of Object.keys(resolvedAssignments)) {
     if (!expectedDates.has(date)) {
       errors.push(`${date}: 캠페인 기간 밖의 배정 날짜입니다.`);
     }
@@ -114,12 +128,12 @@ export function validateContentAndAssignments(
     }
   }
 
-  if (!isRecord(commonMessages)) {
+  if (!isRecord(resolvedCommonMessages)) {
     errors.push("공통 응원 문구는 날짜별 객체여야 합니다.");
   } else {
     const commonTextSeen = new Set<string>();
     for (const date of dates) {
-      const message = commonMessages[date];
+      const message = resolvedCommonMessages[date];
       if (!isNonEmptyText(message)) {
         errors.push(`${date}: 공통 응원 문구가 비어 있거나 누락됐습니다.`);
         continue;
@@ -130,7 +144,7 @@ export function validateContentAndAssignments(
       commonTextSeen.add(message);
     }
 
-    for (const date of Object.keys(commonMessages)) {
+    for (const date of Object.keys(resolvedCommonMessages)) {
       if (!expectedDates.has(date)) {
         errors.push(`${date}: 캠페인 기간 밖의 공통 응원 날짜입니다.`);
       }

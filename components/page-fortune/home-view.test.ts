@@ -11,7 +11,15 @@ describe("home screen selection using B's date rules", () => {
   });
 
   it("shows the start notice before the campaign", () => {
-    expect(getHomeView("2026-09-18")).toEqual({ kind: "not-started" });
+    expect(getHomeView("2026-09-19")).toEqual({ kind: "not-started" });
+  });
+
+  it("opens on the sixtieth day before the exam", () => {
+    expect(getHomeView("2026-09-20")).toEqual({
+      kind: "active",
+      date: "2026-09-20",
+      dday: 60,
+    });
   });
 
   it("keeps the exam day open", () => {

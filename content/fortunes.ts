@@ -1,4 +1,4 @@
-import { CAMPAIGN_START_DATE, EXAM_DATE } from "../config/campaign";
+import { getCampaignDates } from "../lib/assignments";
 import type { FortuneKeyword } from "./keywords";
 
 export const DDAY_RANGES = [
@@ -152,22 +152,37 @@ const COMMON_MESSAGE_TEXTS = [
   "오늘을 건너는 너와 모두의 마음에 평온이 머물기를.",
 ] as const;
 
-function createCommonMessages(): Record<string, string> {
-  const start = Date.parse(`${CAMPAIGN_START_DATE}T00:00:00.000Z`);
-  const end = Date.parse(`${EXAM_DATE}T00:00:00.000Z`);
+export function createCommonMessages(examYear: number): Record<string, string> {
   const messages: Record<string, string> = {};
-  let messageIndex = 0;
+  const dates = getCampaignDates(examYear);
 
-  // 날짜별 한 문장씩 고정해 같은 날에는 모든 사용자에게 같은 응원을 제공합니다.
-  for (let time = start; time <= end; time += 86_400_000) {
-    const message = COMMON_MESSAGE_TEXTS[messageIndex];
-    if (message) {
-      messages[new Date(time).toISOString().slice(0, 10)] = message;
+  if (dates.length > COMMON_MESSAGE_TEXTS.length - 1) {
+    throw new Error(
+      `${examYear}년 캠페인에 공통 응원 문장이 ${dates.length}개 필요하지만 데이터는 ${COMMON_MESSAGE_TEXTS.length - 1}개뿐입니다.`,
+    );
+  }
+
+  // 기존 2026년 결과를 유지하며 D-61 문장은 제외하고 D-60부터 매년 재사용합니다.
+  for (const [index, date] of dates.entries()) {
+    const message = COMMON_MESSAGE_TEXTS[index + 1];
+    if (!message) {
+      throw new Error(`${date} 공통 응원 문구를 찾을 수 없습니다.`);
     }
-    messageIndex += 1;
+    messages[date] = message;
   }
 
   return messages;
 }
 
-export const COMMON_MESSAGES = createCommonMessages();
+const commonMessagesByYear = new Map<number, Record<string, string>>();
+
+export function getCommonMessage(date: string): string | undefined {
+  const year = Number(date.slice(0, 4));
+  let messages = commonMessagesByYear.get(year);
+  if (!messages) {
+    messages = createCommonMessages(year);
+    commonMessagesByYear.set(year, messages);
+  }
+
+  return messages[date];
+}

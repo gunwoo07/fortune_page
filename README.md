@@ -20,9 +20,9 @@ npm run dev
 ## 현재 구현 상태
 
 - `lib/date.ts`: 한국 시간 기준 날짜, D-day 계산, 캠페인 날짜 검증
-- `config/campaign.ts`: 캠페인 기간 설정. 현재 `2026-09-19`부터 시험일 `2026-11-19`까지입니다.
-- `lib/assignments.ts`, `content/assignments.generated.ts`: 62일 동안 숫자 0~9에 키워드를 배정합니다. 하루 안에 키워드는 중복되지 않고, 같은 숫자의 키워드는 전날과 다릅니다.
-- `content/keywords.ts`, `content/fortunes.ts`: 키워드 및 D-day 구간별 개인 운세와 날짜별 공통 응원
+- `config/campaign.ts`: 매년 11월 세 번째 목요일을 수능일로 계산하고, 60일 전부터 시험일까지 캠페인을 운영합니다. 2026년 캠페인은 `2026-09-20`부터 `2026-11-19`까지입니다.
+- `lib/assignments.ts`, `content/assignments.generated.ts`: 61일 캠페인 날짜에 맞춰 숫자 0~9 키워드 배정을 매년 재사용합니다. 하루 안에 키워드는 중복되지 않고, 같은 숫자의 키워드는 전날과 다릅니다.
+- `content/keywords.ts`, `content/fortunes.ts`: D-day 구간별 개인 운세와 공통 응원 문구. 현재 공통 응원 문구 61개를 매년 순서대로 재사용합니다.
 - `lib/fortune.ts`: 날짜와 숫자로 운세 결과를 생성하는 엔진
 - `lib/fortune-api.ts`: 프런트엔드에서 사용할 엔진 함수, 공유 결과 검증 함수와 타입의 진입점
 - `app/r/[date]/[digit]/page.tsx`: 공유 URL에서 날짜·숫자를 검증해 결과를 서버 렌더링

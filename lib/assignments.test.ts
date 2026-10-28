@@ -1,23 +1,38 @@
 import { describe, expect, it } from "vitest";
-import { CAMPAIGN_START_DATE, EXAM_DATE } from "../config/campaign";
+import {
+  ASSIGNMENT_TEMPLATE_EXAM_YEAR,
+  getCampaignStartDate,
+  getExamDate,
+} from "../config/campaign";
 import { KEYWORDS } from "../content/keywords";
 import { ASSIGNMENTS } from "../content/assignments.generated";
 import { generateAssignmentTable } from "./assignments";
 
 describe("generateAssignmentTable", () => {
   it("generates a reproducible assignment for every campaign date", () => {
-    const first = generateAssignmentTable();
-    const second = generateAssignmentTable();
+    const first = generateAssignmentTable(ASSIGNMENT_TEMPLATE_EXAM_YEAR);
+    const second = generateAssignmentTable(ASSIGNMENT_TEMPLATE_EXAM_YEAR);
 
     expect(first).toEqual(second);
     expect(first).toEqual(ASSIGNMENTS);
-    expect(Object.keys(first)[0]).toBe(CAMPAIGN_START_DATE);
-    expect(Object.keys(first).at(-1)).toBe(EXAM_DATE);
-    expect(Object.keys(first)).toHaveLength(62);
+    expect(Object.keys(first)[0]).toBe(
+      getCampaignStartDate(ASSIGNMENT_TEMPLATE_EXAM_YEAR),
+    );
+    expect(Object.keys(first).at(-1)).toBe(
+      getExamDate(ASSIGNMENT_TEMPLATE_EXAM_YEAR),
+    );
+    expect(Object.keys(first)).toHaveLength(61);
+  });
+
+  it("reuses the assignment pattern for a different exam year", () => {
+    const template = generateAssignmentTable(ASSIGNMENT_TEMPLATE_EXAM_YEAR);
+    const nextYear = generateAssignmentTable(2027);
+
+    expect(Object.values(nextYear)).toEqual(Object.values(template));
   });
 
   it("assigns all keywords once per day and changes each digit's keyword the next day", () => {
-    const table = generateAssignmentTable();
+    const table = generateAssignmentTable(ASSIGNMENT_TEMPLATE_EXAM_YEAR);
     const dates = Object.keys(table);
 
     for (const [index, date] of dates.entries()) {
