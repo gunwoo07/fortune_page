@@ -73,6 +73,13 @@ npm start                   # 빌드된 앱 실행
 
 배포 환경은 `SITE_URL`에 공개 사이트의 원본 주소(예: `https://fortune.example.com`)를 설정해야 합니다. Vercel에서는 `VERCEL_PROJECT_PRODUCTION_URL` 또는 `VERCEL_URL`을 사용할 수 있습니다.
 
+## 도메인 및 5일차 QA
+
+- 운영 도메인 후보는 `pagefortune.kr`로 선택했습니다. 2026-10-28 KISA/KRNIC WHOIS 조회에서 미등록 상태였고 DNS도 확인되지 않았으므로, 등록 후 DNS 연결을 마친 다음 운영 환경의 `SITE_URL`에 `https://pagefortune.kr`을 설정하세요.
+- 모바일·데스크톱 폭 320, 360, 390, 768, 1280px에서 홈과 결과 화면을 확인했고 가로 넘침은 없었습니다.
+- 날짜 경계 테스트 15개, 전체 단위 테스트 89개, 콘텐츠 검증, ESLint, TypeScript 검사와 프로덕션 빌드가 통과했습니다.
+- Vercel 미리보기 배포와 실제 iOS·Android 공유 검수는 계정·기기 확인이 필요해 남은 출시 전 작업입니다.
+
 배정표를 수정하거나 재생성한 뒤에는 `npm run validate:content`와 `npm test`를 실행하세요.
 
 ## 프로젝트 구조
