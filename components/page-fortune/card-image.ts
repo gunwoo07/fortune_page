@@ -31,7 +31,7 @@ export async function downloadFortuneCard(result: FortuneResult): Promise<void> 
   context.fillStyle = "#111";
   context.textAlign = "center";
   context.font = "750 60px Arial, sans-serif";
-  context.fillText(ddayLabel(result.dday), WIDTH / 2, 150);
+  context.fillText(ddayLabel(result.dday), WIDTH / 2, layout.titleTop);
 
   context.font = PERSONAL_FONT;
   personalLines.forEach((line, index) => {
@@ -45,7 +45,13 @@ export async function downloadFortuneCard(result: FortuneResult): Promise<void> 
   const illustration = new window.Image();
   illustration.src = "/illustrations/page-clover.svg";
   await illustration.decode();
-  context.drawImage(illustration, 42, layout.illustrationTop, 140, 190);
+  context.drawImage(
+    illustration,
+    layout.illustrationLeft,
+    layout.illustrationTop,
+    layout.illustrationWidth,
+    layout.illustrationHeight,
+  );
 
   context.fillStyle = "#666";
   context.font = '11px Arial, "Page Korean", sans-serif';
