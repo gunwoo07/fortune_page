@@ -15,6 +15,7 @@ describe("result component contract", () => {
     }));
 
     expect(html).toContain("D-25");
+    expect(html).not.toContain("10월 25일");
     expect(html).toContain(result.personalMessage);
     expect(html).toContain(result.commonMessage);
     expect(html).toContain("결과 공유하기");

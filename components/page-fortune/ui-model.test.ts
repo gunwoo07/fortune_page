@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ddayLabel, parseDigit } from "./ui-model";
+import { ddayLabel, formatResultDate, parseDigit } from "./ui-model";
 
 describe("digit input", () => {
   it("accepts each single ASCII digit, including zero", () => {
@@ -12,6 +12,16 @@ describe("digit input", () => {
     "rejects invalid input %j",
     (input) => expect(parseDigit(input)).toBeNull(),
   );
+});
+
+describe("result date title", () => {
+  it.each([
+    ["2026-11-01", "11월 1일"],
+    ["2026-10-28", "10월 28일"],
+    ["2026-01-01", "1월 1일"],
+  ])("formats the result date %s without depending on today's timezone", (date, label) => {
+    expect(formatResultDate(date)).toBe(label);
+  });
 });
 
 describe("D-day label", () => {

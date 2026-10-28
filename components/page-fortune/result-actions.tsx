@@ -45,11 +45,8 @@ export function ResultActions({ result, sharePath }: ResultActionsProps) {
     }
 
     try {
-      await navigator.share({
-        title: "오늘의 페이지 부적",
-        text: result.personalMessage,
-        url: getShareUrl(),
-      });
+      // 카카오톡 등에 별도 운세 본문이 붙지 않도록 링크만 전달합니다.
+      await navigator.share({ url: getShareUrl() });
       setStatus("공유했어요.");
     } catch (error) {
       // 사용자가 공유 창을 닫은 경우에는 오류나 복사 동작으로 방해하지 않습니다.

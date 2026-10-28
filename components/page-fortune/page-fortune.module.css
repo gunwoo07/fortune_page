@@ -127,6 +127,13 @@
   margin: 50px 0 0 13px;
 }
 
+/* 결과 그림만 종이의 중앙에 두고, 다른 상태 화면의 장식 배치는 유지합니다. */
+.resultSheet .clover {
+  width: 180px;
+  height: auto;
+  margin: 36px auto 0;
+}
+
 /* 공유·복사·저장 컨트롤 */
 .resultActions {
   display: flex;
@@ -246,6 +253,179 @@
 
   .personal {
     font-size: 14px;
+  }
+}
+
+/* 모바일은 브라우저 도구막대가 보일 때의 높이(svh)에 맞춰 여백과 장식만 줄입니다.
+   고정 높이·overflow:hidden은 쓰지 않아 확대, 키보드, 긴 안내문도 계속 읽을 수 있습니다. */
+@media (max-width: 600px) {
+  .sheet {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding: clamp(12px, 3svh, 24px) 24px;
+    padding-top: max(clamp(12px, 3svh, 24px), env(safe-area-inset-top));
+    padding-bottom: max(clamp(12px, 3svh, 24px), env(safe-area-inset-bottom));
+  }
+
+  .dday {
+    flex-shrink: 0;
+    font-size: clamp(38px, 7svh, 56px);
+  }
+
+  .inputSheet {
+    align-items: center;
+  }
+
+  .wave {
+    flex-shrink: 0;
+    width: auto;
+    height: clamp(88px, 18svh, 144px);
+    margin-top: clamp(8px, 3svh, 24px);
+  }
+
+  .form {
+    flex: 1;
+    width: 100%;
+    margin-top: clamp(16px, 5svh, 40px);
+  }
+
+  .prompt {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .digitInput {
+    width: 76px;
+    height: 56px;
+    margin-top: clamp(12px, 3svh, 24px);
+  }
+
+  .error {
+    margin: 8px 0 12px;
+  }
+
+  .confirm {
+    min-height: 48px;
+  }
+
+  .personal {
+    margin-top: clamp(16px, 5svh, 40px);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .common {
+    margin-top: clamp(16px, 4svh, 32px);
+    line-height: 1.7;
+  }
+
+  .clover {
+    flex-shrink: 0;
+    align-self: flex-start;
+    width: auto;
+    height: clamp(72px, 16svh, 128px);
+    margin: clamp(12px, 3svh, 24px) 0 0 8px;
+  }
+
+  .resultSheet .clover {
+    align-self: center;
+    width: auto;
+    height: clamp(112px, 20svh, 166px);
+    margin: auto;
+  }
+
+  .resultSheet .common {
+    margin-bottom: 8px;
+  }
+
+  .resultActions {
+    width: 100%;
+    gap: 4px;
+    margin-top: auto;
+    padding-top: clamp(12px, 2svh, 20px);
+  }
+
+  .resultSheet .resultActions {
+    margin-top: 0;
+  }
+
+  .secondaryActions {
+    gap: 4px;
+  }
+
+  .textButton {
+    padding-inline: 8px;
+  }
+
+  /* 빈 알림 영역은 공간을 차지하지 않되, 실제 안내가 생기면 자연스럽게 늘어납니다. */
+  .status:empty {
+    min-height: 0;
+    margin: 0;
+  }
+
+  .stateTitle {
+    margin-top: clamp(32px, 10svh, 80px);
+  }
+
+  .stateMessage {
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+
+  .stateSheet .clover {
+    align-self: center;
+    margin: 32px 0 16px;
+  }
+}
+
+/* 노트북처럼 가로는 넓지만 높이가 낮은 화면도 결과 버튼이 아래로 밀리지 않게 합니다.
+   홈 화면에는 적용하지 않으며, 아주 짧은 가로 화면/확대 글자는 자연스럽게 스크롤됩니다. */
+@media (min-width: 601px) and (max-height: 950px) {
+  .resultSheet {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding: clamp(16px, 3svh, 28px) 28px;
+  }
+
+  .resultSheet .dday {
+    flex-shrink: 0;
+    font-size: clamp(40px, 7svh, 60px);
+  }
+
+  .resultSheet .personal {
+    margin-top: clamp(16px, 5svh, 40px);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .resultSheet .common {
+    margin-top: clamp(16px, 4svh, 32px);
+    line-height: 1.7;
+  }
+
+  .resultSheet .clover {
+    flex-shrink: 0;
+    align-self: center;
+    width: auto;
+    height: clamp(112px, 21svh, 180px);
+    margin: auto;
+  }
+
+  .resultSheet .common {
+    margin-bottom: 8px;
+  }
+
+  .resultSheet .resultActions {
+    gap: 4px;
+    margin-top: 0;
+    padding-top: clamp(12px, 2svh, 20px);
+  }
+
+  .resultSheet .status:empty {
+    min-height: 0;
+    margin: 0;
   }
 }
 
