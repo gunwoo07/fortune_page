@@ -34,7 +34,7 @@ export async function generateMetadata({
   const imageUrl = new URL(`${sharePath}/opengraph-image`, getSiteUrl());
   // 이미지 URL에 버전을 붙여 이전 텍스트 카드의 이미지 캐시와 구분합니다.
   imageUrl.searchParams.set("v", "clover-1");
-  const title = `수능 ${ddayLabel(result.dday)} · 오늘의 페이지 부적 응원`;
+  const title = `수능 ${ddayLabel(result.dday)} · 오늘의 페이지 응원`;
   const description =
     "책 페이지 숫자로 만난 오늘의 개인 운세와 수험생 모두를 위한 응원입니다.";
   const imageAlt = "네잎클로버를 들고 있는 손그림 캐릭터";
