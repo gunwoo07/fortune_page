@@ -25,6 +25,7 @@ html { min-height: 100%; background: var(--background); }
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100svh;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, "Page Korean", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
