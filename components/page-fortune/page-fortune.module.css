@@ -127,6 +127,13 @@
   margin: 50px 0 0 13px;
 }
 
+/* 결과 그림만 종이의 중앙에 두고, 다른 상태 화면의 장식 배치는 유지합니다. */
+.resultSheet .clover {
+  width: 180px;
+  height: auto;
+  margin: 36px auto 0;
+}
+
 /* 공유·복사·저장 컨트롤 */
 .resultActions {
   display: flex;
@@ -321,11 +328,26 @@
     margin: clamp(12px, 3svh, 24px) 0 0 8px;
   }
 
+  .resultSheet .clover {
+    align-self: center;
+    width: auto;
+    height: clamp(112px, 20svh, 166px);
+    margin: auto;
+  }
+
+  .resultSheet .common {
+    margin-bottom: 8px;
+  }
+
   .resultActions {
     width: 100%;
     gap: 4px;
     margin-top: auto;
     padding-top: clamp(12px, 2svh, 20px);
+  }
+
+  .resultSheet .resultActions {
+    margin-top: 0;
   }
 
   .secondaryActions {
@@ -385,15 +407,19 @@
 
   .resultSheet .clover {
     flex-shrink: 0;
-    align-self: flex-start;
+    align-self: center;
     width: auto;
-    height: clamp(80px, 16svh, 140px);
-    margin: clamp(12px, 3svh, 24px) 0 0 8px;
+    height: clamp(112px, 21svh, 180px);
+    margin: auto;
+  }
+
+  .resultSheet .common {
+    margin-bottom: 8px;
   }
 
   .resultSheet .resultActions {
     gap: 4px;
-    margin-top: auto;
+    margin-top: 0;
     padding-top: clamp(12px, 2svh, 20px);
   }
 
