@@ -357,6 +357,52 @@
   }
 }
 
+/* 노트북처럼 가로는 넓지만 높이가 낮은 화면도 결과 버튼이 아래로 밀리지 않게 합니다.
+   홈 화면에는 적용하지 않으며, 아주 짧은 가로 화면/확대 글자는 자연스럽게 스크롤됩니다. */
+@media (min-width: 601px) and (max-height: 950px) {
+  .resultSheet {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding: clamp(16px, 3svh, 28px) 28px;
+  }
+
+  .resultSheet .dday {
+    flex-shrink: 0;
+    font-size: clamp(40px, 7svh, 60px);
+  }
+
+  .resultSheet .personal {
+    margin-top: clamp(16px, 5svh, 40px);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .resultSheet .common {
+    margin-top: clamp(16px, 4svh, 32px);
+    line-height: 1.7;
+  }
+
+  .resultSheet .clover {
+    flex-shrink: 0;
+    align-self: flex-start;
+    width: auto;
+    height: clamp(80px, 16svh, 140px);
+    margin: clamp(12px, 3svh, 24px) 0 0 8px;
+  }
+
+  .resultSheet .resultActions {
+    gap: 4px;
+    margin-top: auto;
+    padding-top: clamp(12px, 2svh, 20px);
+  }
+
+  .resultSheet .status:empty {
+    min-height: 0;
+    margin: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .confirm {
     transition: none;

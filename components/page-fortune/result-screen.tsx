@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { FortuneResult } from "../../lib/types";
 import { ResultActions } from "./result-actions";
-import { formatResultDate } from "./ui-model";
+import { ddayLabel } from "./ui-model";
 import styles from "./page-fortune.module.css";
 
 export type ResultScreenProps = {
@@ -16,8 +16,8 @@ export type ResultScreenProps = {
 export function ResultScreen({ result, sharePath }: ResultScreenProps) {
   return (
     <main className={`${styles.sheet} ${styles.resultSheet}`} aria-label="오늘의 페이지 부적 결과">
-      <h1 className={styles.dday}>
-        {formatResultDate(result.date)}
+      <h1 className={styles.dday} aria-label={`수능 ${ddayLabel(result.dday)}`}>
+        {ddayLabel(result.dday)}
       </h1>
       <section className={styles.personal} aria-label="오늘의 개인 운세">
         {result.personalMessage}

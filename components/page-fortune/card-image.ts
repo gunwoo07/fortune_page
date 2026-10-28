@@ -1,6 +1,6 @@
 import type { FortuneResult } from "../../lib/types";
 import { calculateCardLayout, wrapCardText } from "./card-layout";
-import { formatResultDate } from "./ui-model";
+import { ddayLabel } from "./ui-model";
 
 const SCALE = 3;
 const WIDTH = 400;
@@ -30,8 +30,8 @@ export async function downloadFortuneCard(result: FortuneResult): Promise<void> 
   context.fillRect(0, 0, WIDTH, layout.height);
   context.fillStyle = "#111";
   context.textAlign = "center";
-  context.font = '700 44px Arial, "Page Korean", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
-  context.fillText(formatResultDate(result.date), WIDTH / 2, 150);
+  context.font = "750 60px Arial, sans-serif";
+  context.fillText(ddayLabel(result.dday), WIDTH / 2, 150);
 
   context.font = PERSONAL_FONT;
   personalLines.forEach((line, index) => {
