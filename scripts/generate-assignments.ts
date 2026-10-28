@@ -1,5 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { ASSIGNMENT_TEMPLATE_EXAM_YEAR } from "../config/campaign";
 import { generateAssignmentTable } from "../lib/assignments";
 
 async function main(): Promise<void> {
@@ -8,7 +9,7 @@ async function main(): Promise<void> {
     "content",
     "assignments.generated.ts",
   );
-  const assignments = generateAssignmentTable();
+  const assignments = generateAssignmentTable(ASSIGNMENT_TEMPLATE_EXAM_YEAR);
   const output = [
     'import type { AssignmentTable } from "../lib/assignments";',
     "",

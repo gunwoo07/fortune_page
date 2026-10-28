@@ -1,4 +1,4 @@
-import { CAMPAIGN_START_DATE, EXAM_DATE } from "../config/campaign";
+import { getCampaignStartDate, getExamDate } from "../config/campaign";
 
 export type FortuneDateError =
   | "invalid-date"
@@ -51,7 +51,8 @@ export function calculateDday(dateString: string): number {
     throw new RangeError("날짜 형식은 실제 날짜인 YYYY-MM-DD여야 합니다.");
   }
 
-  return toEpochDay(EXAM_DATE) - toEpochDay(dateString);
+  const examDate = getExamDate(Number(dateString.slice(0, 4)));
+  return toEpochDay(examDate) - toEpochDay(dateString);
 }
 
 export function validateFortuneDate(
@@ -66,12 +67,16 @@ export function validateFortuneDate(
     return "invalid-today";
   }
 
-  if (CAMPAIGN_START_DATE && dateString < CAMPAIGN_START_DATE) {
+  const year = Number(dateString.slice(0, 4));
+  const campaignStartDate = getCampaignStartDate(year);
+  const examDate = getExamDate(year);
+
+  if (dateString < campaignStartDate) {
     return "before-campaign";
   }
 
   // 과거 결과 링크는 유지하되, 시험일 이후와 오늘 이후의 결과는 새로 열지 않습니다.
-  if (dateString > EXAM_DATE) {
+  if (dateString > examDate) {
     return "campaign-ended";
   }
 

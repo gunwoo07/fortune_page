@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ASSIGNMENTS } from "../content/assignments.generated";
-import { getCampaignDates } from "./assignments";
+import { ASSIGNMENT_TEMPLATE_EXAM_YEAR } from "../config/campaign";
+import { getAssignmentTable, getCampaignDates } from "./assignments";
 import { getFortune, FortuneInputError } from "./fortune";
 
 describe("getFortune", () => {
@@ -42,12 +42,23 @@ describe("getFortune", () => {
   );
 
   it("accepts both ends of the configured campaign", () => {
-    expect(getFortune("2026-09-19", 0).dday).toBe(61);
+    expect(getFortune("2026-09-20", 0).dday).toBe(60);
     expect(getFortune("2026-11-19", 9).dday).toBe(0);
   });
 
+  it("generates results for the next annual campaign", () => {
+    expect(getFortune("2027-09-19", 8)).toMatchObject({
+      date: "2027-09-19",
+      dday: 60,
+    });
+    expect(getFortune("2027-11-18", 8)).toMatchObject({
+      date: "2027-11-18",
+      dday: 0,
+    });
+  });
+
   it("produces a result for every digit on every campaign date", () => {
-    for (const date of getCampaignDates()) {
+    for (const date of getCampaignDates(ASSIGNMENT_TEMPLATE_EXAM_YEAR)) {
       for (let digit = 0; digit <= 9; digit += 1) {
         const result = getFortune(date, digit);
         expect(result.date).toBe(date);
@@ -55,13 +66,13 @@ describe("getFortune", () => {
         expect(result.personalMessage).toBeTruthy();
         expect(result.commonMessage).toBeTruthy();
         expect(result).not.toHaveProperty("keyword");
-        expect(ASSIGNMENTS[date][digit]).toBeTruthy();
+        expect(getAssignmentTable(ASSIGNMENT_TEMPLATE_EXAM_YEAR)[date][digit]).toBeTruthy();
       }
     }
   });
 
   it("rejects dates outside the configured campaign", () => {
-    expect(() => getFortune("2026-09-18", 0)).toThrow(
+    expect(() => getFortune("2026-09-19", 0)).toThrow(
       expect.objectContaining<Partial<FortuneInputError>>({
         code: "before-campaign",
       }),

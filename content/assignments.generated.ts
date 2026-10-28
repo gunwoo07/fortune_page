@@ -1,18 +1,6 @@
 import type { AssignmentTable } from "../lib/assignments";
 
 export const ASSIGNMENTS: AssignmentTable = {
-  "2026-09-19": [
-    "희망",
-    "집중",
-    "믿음",
-    "균형",
-    "차분함",
-    "여유",
-    "회복",
-    "지속",
-    "용기",
-    "단단함"
-  ],
   "2026-09-20": [
     "용기",
     "차분함",

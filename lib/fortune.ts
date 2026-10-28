@@ -1,10 +1,10 @@
 import type { FortuneResult } from "./types";
-import { CAMPAIGN_START_DATE, EXAM_DATE } from "../config/campaign";
+import { getCampaignStartDate, getExamDate } from "../config/campaign";
 import { calculateDday, isValidDateString } from "./date";
-import { ASSIGNMENTS } from "../content/assignments.generated";
+import { getAssignmentTable } from "./assignments";
 import { KEYWORDS, type FortuneKeyword } from "../content/keywords";
 import {
-  COMMON_MESSAGES,
+  getCommonMessage,
   PERSONAL_MESSAGES,
   type DdayRange,
 } from "../content/fortunes";
@@ -48,19 +48,20 @@ export function getFortune(date: string, digit: number): FortuneResult {
     throw new FortuneInputError("invalid-digit");
   }
 
-  if (date < CAMPAIGN_START_DATE) {
+  const year = Number(date.slice(0, 4));
+  if (date < getCampaignStartDate(year)) {
     throw new FortuneInputError("before-campaign");
   }
 
-  if (date > EXAM_DATE) {
+  if (date > getExamDate(year)) {
     throw new FortuneInputError("campaign-ended");
   }
 
   const dday = calculateDday(date);
   const dDayRange = getDdayRange(dday);
-  const dailyAssignment = ASSIGNMENTS[date];
+  const dailyAssignment = getAssignmentTable(year)[date];
   const assignedKeyword = dailyAssignment?.[digit];
-  const commonMessage = COMMON_MESSAGES[date];
+  const commonMessage = getCommonMessage(date);
 
   if (!assignedKeyword || !isFortuneKeyword(assignedKeyword) || !commonMessage) {
     throw new FortuneInputError("content-unavailable");
